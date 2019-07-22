@@ -2,15 +2,18 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 from processors.processor import Processor
+
+
 class DropClose(Processor):
 	def __init__(self, dep_name, d, tolerance, file):
-		self.dep = file[dep_name].values#array-like
+		self.dep = file[dep_name].values
 		self.depth = []
 		for i in range(len(self.dep)):
-			self.depth.append(self.dep[i] * -1)#str
-		self.distance = d#array-like
-		self.tol = float(tolerance)#float
-		self.trimmed = file.copy()#pandas DataFrame
+			self.depth.append(self.dep[i] * -1)
+		self.distance = d
+		self.tol = float(tolerance)
+		self.trimmed = file.copy()
+
 	def process(self):
 		dropped = 0
 		for i in range(len(self.depth)):
