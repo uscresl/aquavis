@@ -8,13 +8,31 @@ from models.model import Model
 
 class SV(Model):
 	def __init__(self, dist_arr, user_name, dep_name, length, file, lat_n, lon_n, dims):
+		"""
+		Creates a Support Vector Regression-based model to interpolate data 
+		
+		@type dist_arr: array-like
+		@param dist_arr: the array that contains each point's distance from the original point
+		@type user_name: str
+		@param user_name: the name of column of the additional data set selected by the user
+		@type dep_name: str
+		@param dep_name: the name of the depth column in the csv file
+		@type length: int
+		@param length: the number of points per row/column that will be displayed on the graph
+		@type file: Pandas DataFrame
+		@param file: the pandas dataframe containing all of the read data from the csv file
+		@type lat_n: str
+		@param lat_n: the name of the latitude column in the csv file
+		@type lon_n: str
+		@param lon_n: the name of the longitude column in the csv file
+		@type dims: int
+		@param dims: the desired dimensions of the graph representing the interpolations of the GPR
+		"""
+
 		self.dist = dist_arr
 		self.user = file[user_name].values
-		self.dep = file[dep_name].values
 		self.dimensions = int(dims)
-		self.depth = []
-		for i in range(len(self.dep)):
-			self.depth.append(self.dep[i] * -1)
+		self.depth = file[dep_name].values.tolist()
 		self.clf = svm.SVR(kernel = 'poly', gamma = 'scale')
 		self.dimns = length
 
@@ -48,12 +66,33 @@ class SV(Model):
 			self.xxx, self.yyy, self.zzz = np.meshgrid(self.x_set, self.y_set, self.z_set)
 	
 	def fit(self):
+		"""
+		Gives access to the fit SVR model
+		
+		@rtype: SVR
+		@returns: the fit SVR model
+		"""
+
 		return self.clf
 	
 	def predict(self):
+		"""
+		Makes a prediction for interpolated datapoints
+		
+		@rtype: array-like
+		@returns: a list containing the xy coordinates and the predicted values at the interpolation points
+		"""
+
 		return ([self.x, self.y, self.clf.predict(self.xy)])
 	
 	def mse(self):
+		"""
+		Calculates the mean squared error of the predicted vs actual data at known datapoints
+		
+		@rtype: float
+		@returns: the mean squared error between the predicted vs actual data at known datapoints
+		"""
+
 		actual = []
 		if self.dimensions == 2:
 			for i in range(len(self.dist)):
@@ -62,11 +101,18 @@ class SV(Model):
 		else:
 			for i in range(len(self.lat)):
 				actual.append([self.lat[i], self.lon[i], self.depth[i]])
-			predicted = self.clf1.predict(actual)
+			predicted = self.clf.predict(actual)
 		
 		return mean_squared_error(self.user, predicted)
 	
 	def predict3d(self):
+		"""
+		Makes a prediction for interpolated datapoints fit to a 3D visualization
+		
+		@rtype: array-like
+		@returns: an array containing the xyz coordinates, the predicted values, and the variance at the interpolation points
+		"""
+
 		x_coordinates = []
 		y_coordinates = []
 		z_coordinates = []

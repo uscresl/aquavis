@@ -5,16 +5,33 @@ from processors.processor import Processor
 
 
 class DropClose(Processor):
-	def __init__(self, dep_name, d, tolerance, file):
-		self.dep = file[dep_name].values
-		self.depth = []
-		for i in range(len(self.dep)):
-			self.depth.append(self.dep[i] * -1)
-		self.distance = d
+	def __init__(self, dep_name, dist_arr, tolerance, file):
+		"""
+		Drops points from the data set that are problematically close together on the graph
+
+		@type dep_name: str
+		@param dep_name: the name of the column that represents depth in the csv file
+		@type dist_arr: array-like
+		@param dist_arr: the array that contains each point's distance from the original point
+		@type tolerance: float
+		@param tolerance: the user's tolerance for how close points are allowed to be on the graph
+		@type file: Pandas DataFrame
+		@param file: the read pandas dataframe that holds all of the data from the csv file 
+		"""
+
+		self.depth = file[dep_name].values.tolist()
+		self.distance = dist_arr
 		self.tol = float(tolerance)
 		self.trimmed = file.copy()
 
 	def process(self):
+		"""
+		Removes points from the dataframe that are too close together (based on the user's tolerance)
+
+		@rtype: Pandas DataFrame
+		@returns: the new dataframe ridden of problematic data
+		"""
+
 		dropped = 0
 		for i in range(len(self.depth)):
 			k = 0

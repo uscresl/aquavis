@@ -11,14 +11,31 @@ from models.model import Model
 
 class GPR(Model):
 	def __init__(self, dist_array, user_name, dep_name, length, file, lat_n, lon_n, dims):
+		"""
+		Creates a Gaussian Process Regression-based model to interpolate data 
+		
+		@type dist_array: array-like
+		@param dist_array: the array that contains each point's distance from the original point
+		@type user_name: str
+		@param user_name: the name of column of the additional data set selected by the user
+		@type dep_name: str
+		@param dep_name: the name of the depth column in the csv file
+		@type length: int
+		@param length: the number of points per row/column that will be displayed on the graph
+		@type file: Pandas DataFrame
+		@param file: the pandas dataframe containing all of the read data from the csv file
+		@type lat_n: str
+		@param lat_n: the name of the latitude column in the csv file
+		@type lon_n: str
+		@param lon_n: the name of the longitude column in the csv file
+		@type dims: int
+		@param dims: the desired dimensions of the graph representing the interpolations of the GPR
+		"""
+		
 		self.dist = dist_array
 		self.user = file[user_name].values
-		self.dep = file[dep_name].values
 		self.dimensions = int(dims)
-		#self.depth = file[dep_name].values.to_list()
-		self.depth = []
-		for i in range(len(self.dep)):
-			self.depth.append(self.dep[i] * -1)
+		self.depth = file[dep_name].values.tolist()
 		self.leng = length
 		self.gp = GaussianProcessRegressor(normalize_y=True, kernel=Matern()+ConstantKernel(), alpha = 0.0001)
 		
@@ -52,13 +69,34 @@ class GPR(Model):
 			self.xxx, self.yyy, self.zzz = np.meshgrid(self.x_set, self.y_set, self.z_set)
 
 	def fit(self):
+		"""
+		Gives access to the fit SVR model
+		
+		@rtype: SVR
+		@returns: the fit SVR model
+		"""
+
 		return self.gp
 
 	def predict(self):
+		"""
+		Makes a prediction for interpolated datapoints
+		
+		@rtype: array-like
+		@returns: a list containing the xy coordinates and the predicted values at the interpolation points
+		"""
+
 		pred = self.gp.predict(self.xy, return_std = True)
 		return ([self.x, self.y, pred[0], pred[1]])
 	
 	def mse(self):
+		"""
+		Calculates the mean squared error of the predicted vs actual data at known datapoints
+		
+		@rtype: float
+		@returns: the mean squared error between the predicted vs actual data at known datapoints
+		"""
+	
 		actual = []
 		if self.dimensions == 2: 
 			for i in range(len(self.dist)):
@@ -71,6 +109,13 @@ class GPR(Model):
 		return mean_squared_error(self.user, predicted)
 	
 	def predict3d(self):
+		"""
+		Makes a prediction for interpolated datapoints fit to a 3D visualization
+		
+		@rtype: array-like
+		@returns: an array containing the xyz coordinates, the predicted values, and the variance at the interpolation points
+		"""
+	
 		x_coordinates = []
 		y_coordinates = []
 		z_coordinates = []

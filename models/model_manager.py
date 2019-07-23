@@ -6,15 +6,19 @@ from models.svr import SV
 
 class ModelManager(Model):
 	def __init__(self, primary, secondary, tolerance, dimension):
-		'''
+		"""
 		Manages which model is more fit to graph based on MSE, user preference, and user-selected MSE tolerance
 		
+		@type primary: Gaussian Process Regressor/SVR
 		@param primary: the user's preferred type of model
+		@type secondary: Gaussian Process Regressor/SVR
 		@param secondary: the user's non-preferred type of model
+		@type tolerance: float
 		@param tolerance: the user's tolerance for MSE
+		@type dimension: int
 		@param dimension: the user's selected dimensions for the visualization of the model (2D/3D)
+		"""
 
-		'''
 		self.tol = float(tolerance)
 		self.pri = primary
 		self.sec = secondary
@@ -22,13 +26,13 @@ class ModelManager(Model):
 		self.dim = dimension
 
 	def fit(self):
-		'''
-
+		"""
 		Picks the model based on MSE, user preference, and user-selected MSE tolerance
 		
-		@return the GPR or SVR object fit to the known data 
+		@rtype: Gaussian Process Regressor/SVR
+		@returns: the GPR or SVR object fit to the known data 
+		"""
 
-		'''
 		if self.pri.mse() > self.tol:
 			print ("Your selected model did not fit your selected tolerance. Checking the other model...")
 			if self.sec.mse() > self.tol:
@@ -51,13 +55,13 @@ class ModelManager(Model):
 			return self.pri.fit()
 
 	def predict(self):
-		'''
-
+		"""
 		Predicts the interpolated data based on the pre-selected model and dimensions
 
-		@return a list that contains all the data needed to graph
+		@rtype: array-like 
+		@returns: a list that contains all the data needed to graph
+		"""
 
-		'''
 		if self.dim == 2:
 			if self.mod == 0:
 				return self.pri.predict()
@@ -69,13 +73,13 @@ class ModelManager(Model):
 			else:
 				return self.sec.predict3d()
 	def mse(self):
-		'''
-		
+		"""
 		Calculates the mean squared error of the predicted data set vs. the actual data set
 
-		@return the float value of mse
+		@rtype: float
+		@returns: the float value of mse
+		"""
 
-		'''
 		if self.mod == 0:
 			return self.pri.mse()
 		else:

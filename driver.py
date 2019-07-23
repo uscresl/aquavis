@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from processors.drop_close import DropClose
-from processors.outlier_removal import GaussOutlierRemoval
+from processors.outlier_removal import OutlierRemoval
 from processors.distance_calculator import DistanceCalculator
 from processors.step_range import StepRange
 from processors.processor import Processor
@@ -138,10 +138,10 @@ distance_arr = distance.process()
 file_ranger = StepRange(step_name = range_name, step_min = range_min, step_max = range_max, file = read_file)
 file_ranged = file_ranger.process()
 
-close_dropper = DropClose(dep_name = dep, d = distance_arr, tolerance = tol, file = file_ranged)
+close_dropper = DropClose(dep_name = dep, dist_arr = distance_arr, tolerance = tol, file = file_ranged)
 close_dropped = close_dropper.process()
 
-outlier_remover = GaussOutlierRemoval(tolerance = outlier_tol, user_name = user, file = close_dropped)
+outlier_remover = OutlierRemoval(tolerance = outlier_tol, user_name = user, file = close_dropped)
 outlier_removed = outlier_remover.process()
 
 distance = DistanceCalculator(lat_name = lat, long_name = lon, file = outlier_removed)
