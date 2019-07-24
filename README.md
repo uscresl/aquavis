@@ -1,1 +1,1 @@
-# aquavis
+# This program takes a csv file and displays the data in a useful way. 
