@@ -1,4 +1,3 @@
-#Data Loader
 from abc import ABC, abstractmethod
 
 

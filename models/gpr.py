@@ -37,8 +37,8 @@ class GPR(Model):
 		self.dimensions = int(dims)
 		self.depth = file[dep_name].values.tolist()
 		self.leng = length
-		self.gp = GaussianProcessRegressor(normalize_y=True, kernel=Matern()+ConstantKernel(), alpha = 0.0001)
-		
+		self._gp = GaussianProcessRegressor(normalize_y=True, kernel=Matern()+ConstantKernel(), alpha = 0.0001)
+		self.is_fit = False
 		if self.dimensions == 2:
 			self.x_coor = np.linspace(min(self.dist), max(self.dist), self.leng)
 			self.y_coor = np.linspace(min(self.depth), max(self.depth), self.leng)
@@ -54,26 +54,39 @@ class GPR(Model):
 			self.x_arr = []
 			for i in range(len(self.depth)):
 				self.x_arr.append([self.dist[i], self.depth[i]])
-			self.gp.fit(self.x_arr, self.user)
-		
 		else:
 			self.lat = file[lat_n].values
 			self.lon = file[lon_n].values
 			self.fit_array = []
 			for i in range(len(self.lat)):
 				self.fit_array.append([self.lat[i], self.lon[i], self.depth[i]])
-			self.gp.fit(self.fit_array, self.user)
 			self.x_set = np.linspace(min(self.lat), max(self.lat), self.leng)
 			self.y_set = np.linspace(min(self.lon), max(self.lon), self.leng)
 			self.z_set = np.linspace(min(self.depth), max(self.depth), self.leng)
 			self.xxx, self.yyy, self.zzz = np.meshgrid(self.x_set, self.y_set, self.z_set)
 
+	@property
+	def gp(self):
+		"""
+		Checks to see if the model is fit whenever referenced, and, if not, fits the model
+
+		@rtype: Gaussian Process Regressor
+		@returns: the fit model
+		"""
+
+		if self.is_fit == False:  
+			if self.dimensions == 2:
+				self._gp.fit(self.x_arr, self.user)
+			else:
+				self._gp.fit(self.fit_array, self.user)
+		return self._gp
+
 	def fit(self):
 		"""
-		Gives access to the fit SVR model
+		Gives access to the fit GPR model (used in model_manager class)
 		
 		@rtype: SVR
-		@returns: the fit SVR model
+		@returns: the fit GPR model
 		"""
 
 		return self.gp
@@ -113,7 +126,7 @@ class GPR(Model):
 		Makes a prediction for interpolated datapoints fit to a 3D visualization
 		
 		@rtype: array-like
-		@returns: an array containing the xyz coordinates, the predicted values, and the variance at the interpolation points
+		@returns: a list containing the xyz coordinates, the predicted values, and the variance at the interpolation points
 		"""
 	
 		x_coordinates = []
